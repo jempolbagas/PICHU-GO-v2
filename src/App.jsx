@@ -1,18 +1,19 @@
 // src/App.jsx
 import { useState, useEffect } from 'react';
 import CalculatorInput from './components/CalculatorInput';
+import ResultCard from './components/ResultCard'; // Ensure this import is correct
 import { calculateKorea, calculateChina } from './utils/calculator';
-import { Flag } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default function App() {
     // --- STATE ---
-    const [activeTab, setActiveTab] = useState('KR'); // 'KR' or 'CN'
+    const [activeTab, setActiveTab] = useState('KR');
     const [price, setPrice] = useState('');
     const [ongkir, setOngkir] = useState('');
     const [people, setPeople] = useState(1);
     const [result, setResult] = useState({ total: 0, itemPrice: 0, fees: 0 });
 
-    // --- CONFIG (Hardcoded for now) ---
+    // --- CONFIG ---
     const config = {
         rate_kr: 11.75,
         jasa_tf_kr: 6000,
@@ -23,10 +24,8 @@ export default function App() {
         ongkir_ch_default: 100
     };
 
-    // --- LOGIC ---
     const isKr = activeTab === 'KR';
 
-    // Handlers for Steppers
     const adjustValue = (setter, currentVal, step, isFloat = false) => {
         const num = parseFloat(currentVal) || 0;
         const newVal = Math.max(0, num + step);
@@ -55,112 +54,101 @@ export default function App() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center pt-10 pb-12 px-4 font-sans text-slate-800">
+        <div className="min-h-screen flex flex-col items-center pt-12 pb-12 px-4 font-sans text-slate-700">
 
-            {/* HEADER */}
-            <h1 className="text-[2.5rem] font-black text-[#B83280] mb-8 tracking-tight drop-shadow-sm text-center uppercase">
-                Pichu Go Calculator
-            </h1>
+            {/* HEADER: Washi Tape Style */}
+            <div className="relative mb-10 rotate-[-2deg]">
+                <div className="absolute -inset-1 bg-[#FFB7B2] opacity-30 blur-sm rounded-lg transform rotate-2"></div>
+                <h1 className="relative bg-white border-2 border-[#FFB7B2] px-8 py-3 rounded-xl text-3xl font-bold text-[#FF8E88] shadow-[4px_4px_0px_0px_#FFDAC1] flex items-center gap-2">
+                    <Sparkles size={24} className="text-[#FFE45E]" fill="#FFE45E"/>
+                    Pichu Go Calculator
+                </h1>
+            </div>
 
-            {/* TABS (Pill Shape) */}
-            <div className="bg-white/40 backdrop-blur-md p-1.5 rounded-full flex gap-1 mb-6 shadow-sm border border-white/50">
+            {/* TABS: Folder Tabs */}
+            <div className="flex gap-4 mb-8">
                 <button
                     onClick={() => handleTabChange('KR')}
-                    className={`flex items-center gap-2 px-8 py-2.5 rounded-full font-bold transition-all text-sm ${
-                        isKr ? 'bg-[#D53F8C] text-white shadow-md' : 'text-gray-600 hover:bg-white/40'
+                    className={`px-6 py-3 rounded-t-2xl font-bold text-sm transition-all border-2 border-b-0 ${
+                        isKr
+                            ? 'bg-[#FFDEE9] border-[#FFB7B2] text-[#D65D7A] translate-y-2'
+                            : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50'
                     }`}
                 >
                     🇰🇷 Korea
                 </button>
                 <button
                     onClick={() => handleTabChange('CN')}
-                    className={`flex items-center gap-2 px-8 py-2.5 rounded-full font-bold transition-all text-sm ${
-                        !isKr ? 'bg-[#C53030] text-white shadow-md' : 'text-gray-600 hover:bg-white/40'
+                    className={`px-6 py-3 rounded-t-2xl font-bold text-sm transition-all border-2 border-b-0 ${
+                        !isKr
+                            ? 'bg-[#E2F0CB] border-[#B5E48C] text-[#5A9E48] translate-y-2'
+                            : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50'
                     }`}
                 >
                     🇨🇳 China
                 </button>
             </div>
 
-            {/* EXCHANGE RATE PILL */}
-            <div className="bg-white/60 backdrop-blur-sm px-6 py-3 rounded-2xl text-sm font-bold text-[#805AD5] mb-8 shadow-sm border border-white/50 w-full max-w-2xl text-center">
-                💱 Exchange Rate: 1 {isKr ? 'KRW' : 'CNY'} = {isKr ? config.rate_kr : config.rate_ch} IDR
-            </div>
+            {/* MAIN CONTAINER: Journal Page Look */}
+            <div className={`w-full max-w-4xl bg-white rounded-3xl p-8 border-4 shadow-xl grid grid-cols-1 lg:grid-cols-2 gap-10 relative z-10 ${
+                isKr ? 'border-[#FFB7B2]' : 'border-[#E2F0CB]'
+            }`}>
 
-            {/* MAIN GRID LAYOUT */}
-            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-10">
+                {/* LEFT COL: Inputs */}
+                <div className="flex flex-col gap-2">
+                    {/* Exchange Rate Sticky Note */}
+                    <div className="bg-[#FFF4BD] text-[#D4A017] p-3 rounded-lg mb-6 text-sm font-bold text-center shadow-sm rotate-1 transform w-fit mx-auto border border-[#FFE45E]">
+                        📌 Rate: 1 {isKr ? 'KRW' : 'CNY'} = {isKr ? config.rate_kr : config.rate_ch} IDR
+                    </div>
 
-                {/* LEFT COL: INPUTS */}
-                <div className="flex flex-col">
                     <CalculatorInput
-                        label={isKr ? "💰 Harga Produk (0.1 = 1,000 Won)" : "💰 Harga Produk (Yuan)"}
+                        label={isKr ? "Product Price (Won)" : "Product Price (Yuan)"}
                         value={price}
                         onChange={setPrice}
                         placeholder="0.00"
+                        color={isKr ? "pink" : "green"}
                         onIncrement={() => adjustValue(setPrice, price, isKr ? 0.01 : 1, isKr)}
                         onDecrement={() => adjustValue(setPrice, price, isKr ? -0.01 : -1, isKr)}
-                        helpText={isKr ? "Example: Enter 1.0 for 10,000 KRW" : "Enter exact Yuan price"}
+                        helpText="Price per item from the website"
                     />
 
                     <CalculatorInput
-                        label={isKr ? "🚚 Ongkir Lokal Korea (Won)" : "🚚 Ongkir Lokal China (Yuan)"}
+                        label={isKr ? "Local Shipping (Won)" : "Local Shipping (Yuan)"}
                         value={ongkir}
                         onChange={setOngkir}
                         placeholder={isKr ? config.ongkir_kr_default : config.ongkir_ch_default}
+                        color={isKr ? "pink" : "green"}
                         onIncrement={() => adjustValue(setOngkir, ongkir || (isKr ? 2000 : 10), isKr ? 500 : 1)}
                         onDecrement={() => adjustValue(setOngkir, ongkir || (isKr ? 2000 : 10), isKr ? -500 : -1)}
-                        helpText="Shipping fee to warehouse"
+                        helpText="Shipping cost to the warehouse"
                     />
-                </div>
 
-                {/* RIGHT COL: SLIDER */}
-                <div className="flex flex-col justify-start pt-2">
-                    <div className="flex items-center justify-between mb-4">
-                        <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                            👥 Jumlah Sharing (Orang)
-                            <div className="group relative">
-                                <div className="absolute left-full top-0 ml-2 w-32 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block">
-                                    Total people in GO
-                                </div>
-                            </div>
-                        </label>
-                        <span className="text-2xl font-black text-[#D53F8C]">{people}</span>
-                    </div>
-
-                    <div className="h-12 flex items-center bg-white/50 rounded-full px-4 border border-pink-100">
+                    {/* PEOPLE SLIDER */}
+                    <div className="mt-6 bg-[#F8F9FA] p-5 rounded-2xl border border-gray-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <label className="text-sm font-bold text-gray-500">
+                                Sharing (People)
+                            </label>
+                            <span className={`text-xl font-bold ${isKr ? 'text-[#FF8E88]' : 'text-[#7CB518]'}`}>
+                    {people} <span className="text-xs text-gray-400">pax</span>
+                </span>
+                        </div>
                         <input
                             type="range"
                             min="1"
                             max="50"
                             value={people}
                             onChange={(e) => setPeople(e.target.value)}
-                            className="w-full accent-[#D53F8C] h-2 bg-pink-200 rounded-lg appearance-none cursor-pointer"
+                            className="w-full cursor-pointer"
                         />
                     </div>
                 </div>
-            </div>
 
-            {/* RESULT CARD (Solid White) */}
-            <div className="w-full max-w-2xl bg-white rounded-[2rem] p-10 text-center shadow-[0_20px_40px_-15px_rgba(213,63,140,0.3)] relative overflow-hidden">
-                <p className="text-xs font-bold tracking-[0.2em] uppercase mb-4 text-[#97266D] flex items-center justify-center gap-2">
-                    {isKr ? <Flag size={14} /> : '🇨🇳'} {isKr ? 'Korea' : 'China'} Estimated Total
-                </p>
-
-                <h2 className="text-6xl font-black text-[#702459] mb-6 tracking-tighter">
-                    Rp {result.total.toLocaleString('id-ID')}
-                </h2>
-
-                <div className="inline-flex items-center gap-6 bg-pink-50 px-8 py-3 rounded-full text-sm font-bold text-[#702459]">
-          <span className="flex items-center gap-2">
-            📦 Price: {result.itemPrice.toLocaleString('id-ID')}
-          </span>
-                    <span className="text-pink-300">•</span>
-                    <span className="flex items-center gap-2">
-            ✈️ Fees: {result.fees.toLocaleString('id-ID')}
-          </span>
+                {/* RIGHT COL: Result Card */}
+                <div className="flex items-center">
+                    <ResultCard result={result} isKr={isKr} />
                 </div>
             </div>
-
         </div>
     );
 }

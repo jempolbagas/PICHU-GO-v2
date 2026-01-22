@@ -1,6 +1,6 @@
 // src/components/CalculatorInput.jsx
 import React from 'react';
-import { Minus, Plus, HelpCircle } from 'lucide-react'; // Make sure to install: npm install lucide-react
+import { Minus, Plus, HelpCircle } from 'lucide-react';
 
 export default function CalculatorInput({
                                             label,
@@ -9,47 +9,53 @@ export default function CalculatorInput({
                                             onIncrement,
                                             onDecrement,
                                             placeholder,
-                                            helpText
+                                            helpText,
+                                            color = "pink"
                                         }) {
+    // Dynamic colors based on prop
+    const activeColor = color === 'pink' ? 'text-[#FF8E88]' : 'text-[#7CB518]';
+    const bgColor = color === 'pink' ? 'bg-[#FFF5F7]' : 'bg-[#F2FBE0]';
+    const borderColor = color === 'pink' ? 'focus-within:border-[#FFB7B2]' : 'focus-within:border-[#E2F0CB]';
+
     return (
-        <div className="mb-6">
-            {/* Label Row */}
+        <div className="mb-4">
             <div className="flex items-center gap-2 mb-2 ml-1">
-                <span className="text-sm font-bold text-gray-700">{label}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">{label}</span>
                 {helpText && (
                     <div className="group relative">
-                        <HelpCircle size={16} className="text-gray-400 cursor-help" />
-                        <div className="absolute left-full top-0 ml-2 w-48 bg-gray-800 text-white text-xs rounded p-2 hidden group-hover:block z-10">
+                        <HelpCircle size={14} className="text-gray-300 cursor-help" />
+                        <div className="absolute left-full top-0 ml-2 w-48 bg-gray-700 text-white text-[10px] rounded p-2 hidden group-hover:block z-10 shadow-lg">
                             {helpText}
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Input Capsule */}
-            <div className="bg-white rounded-full flex items-center p-1 shadow-sm border border-pink-100 focus-within:ring-2 focus-within:ring-pink-400 transition-all h-12">
-                {/* Text Input */}
+            <div className={`
+        flex items-center p-2 rounded-2xl border-2 border-transparent transition-all
+        bg-white shadow-[0_2px_10px_rgba(0,0,0,0.03)]
+        ${borderColor}
+      `}>
                 <input
                     type="number"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
-                    className="bg-transparent w-full pl-6 font-bold text-gray-700 outline-none text-lg placeholder-gray-300"
+                    className={`bg-transparent w-full pl-4 font-bold outline-none text-xl placeholder-gray-200 ${activeColor}`}
                 />
 
-                {/* Stepper Buttons */}
-                <div className="flex items-center gap-1 pr-1">
+                <div className="flex items-center gap-1">
                     <button
                         onClick={onDecrement}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-pink-50 text-pink-600 hover:bg-pink-200 transition-colors active:scale-95"
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg ${bgColor} ${activeColor} hover:brightness-95 transition-all`}
                     >
-                        <Minus size={16} strokeWidth={3} />
+                        <Minus size={14} strokeWidth={3} />
                     </button>
                     <button
                         onClick={onIncrement}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-pink-50 text-pink-600 hover:bg-pink-200 transition-colors active:scale-95"
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg ${bgColor} ${activeColor} hover:brightness-95 transition-all`}
                     >
-                        <Plus size={16} strokeWidth={3} />
+                        <Plus size={14} strokeWidth={3} />
                     </button>
                 </div>
             </div>
