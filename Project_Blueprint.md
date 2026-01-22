@@ -13,7 +13,7 @@
 | Component | Choice | Reason |
 | --- | --- | --- |
 | **Frontend Framework** | **React** (via Vite) | Component-based architecture for reusable UI elements (Cards, Inputs). |
-| **Styling Engine** | **Tailwind CSS** | Rapid development of complex styles like Glassmorphism, gradients, and animations. |
+| **Styling Engine** | **Tailwind CSS v4** | **(Updated)** High-performance styling engine with zero-configuration setup using the Vite plugin. |
 | **Language** | **JavaScript/TypeScript** | Runs natively in the browser for instant math calculations. |
 | **Data Source** | **Google Sheets** (CSV) | Easy for the admin to update rates without touching code. |
 | **Middleware** | **Vercel Functions** | A serverless proxy to hide the Google Sheet ID from the public. |
@@ -69,6 +69,7 @@ The calculation logic must remain domain-specific. Do not change variable names.
 
 * **Design Language:** "Aurora Glass" (Gradient backgrounds + translucent cards).
 * **Responsive Design:** **Mobile-First**. Most users will access this via Twitter/X links on their phones.
+* **Configuration:** Use CSS variables in `@theme` block inside `index.css` instead of `tailwind.config.js`.
 * **Components:**
 * **Tabs:** Floating "Pill" switcher for Korea/China.
 * **Inputs:** Large, touch-friendly areas. No tiny steppers.
@@ -98,10 +99,12 @@ The calculation logic must remain domain-specific. Do not change variable names.
 
 ### 6. Development Roadmap (Step-by-Step)
 
-#### Phase 1: Foundation
+#### Phase 1: Foundation (Tailwind v4 Setup)
 
-* [ ] Initialize Project: `npm create vite@latest pichu-calculator -- --template react`
-* [ ] Install Tailwind CSS.
+* [ ] Initialize Project: `npm create vite@latest pichu-go-web -- --template react`
+* [ ] Install Tailwind v4: `npm install tailwindcss @tailwindcss/vite`
+* [ ] Configure Vite: Add `tailwindcss()` to plugins in `vite.config.js`.
+* [ ] Set up CSS: Add `@import "tailwindcss";` and `@theme` variables (Primary Color, Aurora Animation) in `src/index.css`.
 * [ ] Create the `pichu-config` Google Sheet and add dummy data.
 
 #### Phase 2: The Middleman
@@ -118,7 +121,7 @@ The calculation logic must remain domain-specific. Do not change variable names.
 
 #### Phase 4: UI Construction
 
-* [ ] Build `Layout.jsx` (The background wrapper).
+* [ ] Build `Layout.jsx` (The background wrapper using v4 `@theme` variables).
 * [ ] Build `CalculatorInput.jsx` (Styled input fields).
 * [ ] Build `ResultCard.jsx` (The glassmorphism card).
 * [ ] Wire up state (React `useState`) to connect Inputs -> Logic -> Result.
@@ -140,6 +143,6 @@ The calculation logic must remain domain-specific. Do not change variable names.
 
 ### 7. Developer Notes (for the builder)
 
+* **Tailwind v4 Specific:** No `tailwind.config.js`. Define all custom colors, fonts, and animations directly in `index.css` under the `@theme` block.
 * **Don't over-engineer:** We don't need Redux or heavy state management. React's built-in `useState` and `useEffect` are enough.
-* **CSS Class Strategy:** Use Tailwind utility classes directly. Only extract to custom classes if a style is repeated more than 3 times.
 * **Browser Compatibility:** Ensure the "Glassmorphism" (backdrop-filter) works on Safari (iOS), as that is the primary device for K-Pop GO buyers.
