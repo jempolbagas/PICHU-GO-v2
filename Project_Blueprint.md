@@ -109,15 +109,15 @@ The calculation logic must remain domain-specific. Do not change variable names.
 
 #### Phase 2: The Middleman
 
-* [ ] Create `/api/rates.js` (Vercel function).
-* [ ] Write the logic to fetch Google Sheet CSV and convert to JSON.
-* [ ] Test the API locally using `vercel dev`.
+* [x] Create `/api/rates.js` (Vercel function).
+* [x] Write the logic to fetch Google Sheet CSV and convert to JSON.
+* [x] Test the API locally using `vercel dev`.
 
 #### Phase 3: The Core Logic
 
-* [ ] Create `utils/calculator.js`.
-* [ ] Port the Python functions to JavaScript.
-* [ ] Write a simple test to ensure `1000 Won` equals the expected Rupiah.
+* [x] Create `utils/calculator.js`.
+* [x] Port the Python functions to JavaScript.
+* [x] Write a simple test to ensure `1000 Won` equals the expected Rupiah.
 
 #### Phase 4: UI Construction
 
