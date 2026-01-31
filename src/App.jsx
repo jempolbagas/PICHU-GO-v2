@@ -16,7 +16,7 @@ export default function App() {
     const [mode, setMode] = useState('KR'); // 'KR' or 'CH'
     const [inputs, setInputs] = useState({
         price: '',
-        ongkir: '',
+        ongkir: '2000', // Default for KR
         people: ''
     });
 
@@ -197,14 +197,22 @@ export default function App() {
                         {/* Mode Switcher */}
                         <div className="flex gap-4 mb-6 justify-center">
                             <PixelButton
-                                onClick={() => { playBeep(); setMode('KR'); }}
+                                onClick={() => {
+                                    playBeep();
+                                    setMode('KR');
+                                    setInputs(prev => ({ ...prev, ongkir: '2000' }));
+                                }}
                                 active={mode === 'KR'}
                                 variant={mode === 'KR' ? 'primary' : 'secondary'}
                             >
                                 KRW
                             </PixelButton>
                             <PixelButton
-                                onClick={() => { playBeep(); setMode('CH'); }}
+                                onClick={() => {
+                                    playBeep();
+                                    setMode('CH');
+                                    setInputs(prev => ({ ...prev, ongkir: '20' }));
+                                }}
                                 active={mode === 'CH'}
                                 variant={mode === 'CH' ? 'primary' : 'secondary'}
                             >
