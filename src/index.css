@@ -1,31 +1,60 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import "tailwindcss";
 
 @theme {
-    /* Fonts */
-    --font-pixel: "Press Start 2P", cursive;
+  --color-solar-bg: #1E293B;
+  --color-solar-text: #4ADE80;
+  --color-retro-wood: #78350f;
+  --color-retro-white: #f1f5f9;
 
-    /* Colors */
-    --color-sky-blue: #5bd6ff;
-    --color-grass-green: #5ea942;
-    --color-ground-brown: #6d4f33;
-    --color-cloud-white: #ffffff;
-    --color-title-gold: #ffcc00;
-    --color-title-border: #b8860b;
-    --color-ui-dark: #2d2d2d;
-    --color-ui-light: #f0f0f0;
+  --color-pixel-bg: #5c94fc;
+  --color-pixel-ground: #e86a17;
+  --color-pixel-grass: #80d010;
+
+  --color-shell-wood: #78350f;
+  --color-shell-purple: #8b5cf6;
+  --color-shell-pink: #ec4899;
+  --color-shell-teal: #14b8a6;
+  --color-shell-dark: #1e293b;
+
+  --font-retro: "Press Start 2P", cursive;
+  --font-pixel: "VT323", monospace;
+
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-cloud-move: cloud-move 60s linear infinite;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes cloud-move {
+    from {
+      transform: translateX(-100%);
+    }
+
+    to {
+      transform: translateX(100vw);
+    }
+  }
 }
 
-:root {
-    font-family: var(--font-pixel);
-    background-color: var(--color-sky-blue);
-    color: var(--color-ui-dark);
+/* Utility for Pixel Border (NES Style) */
+.pixel-box {
+  box-shadow:
+    -4px 0 0 0 black,
+    4px 0 0 0 black,
+    0 -4px 0 0 black,
+    0 4px 0 0 black;
+  margin: 4px;
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
+.pixel-text-shadow {
+  text-shadow: 4px 4px 0px #000;
 }

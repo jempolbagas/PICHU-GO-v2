@@ -1,5 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { calculateKorea, calculateChina } from './utils/calculator';
+import PixelButton from './components/PixelButton';
+import PixelInput from './components/PixelInput';
+import BackgroundScene from './components/BackgroundScene';
+import ResultCard from './components/ResultCard';
+import PixelMascot from './components/PixelMascot';
 
 export default function App() {
     // API Configuration State
@@ -10,10 +15,14 @@ export default function App() {
     // User Input State
     const [mode, setMode] = useState('KR'); // 'KR' or 'CH'
     const [inputs, setInputs] = useState({
-        price: 0,
-        ongkir: 0,
-        people: 1
+        price: '',
+        ongkir: '',
+        people: ''
     });
+
+    // Customization State
+    const [theme, setTheme] = useState('wood'); // wood, purple, pink, teal
+    const [mascotMood, setMascotMood] = useState('idle');
 
     // Calculation Result State
     const [result, setResult] = useState({
@@ -21,6 +30,49 @@ export default function App() {
         itemPrice: 0,
         fees: 0
     });
+
+    // --- Audio Logic ---
+    const playBeep = (freq = 440, type = 'square', duration = 0.1) => {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(ctx.currentTime + duration);
+        } catch (e) {
+            console.error("Audio error", e);
+        }
+    };
+
+    const handleThemeChange = (newTheme) => {
+        playBeep(600, 'triangle', 0.1);
+        setTheme(newTheme);
+    };
+
+    // Calculate Dynamic Styles for the Shell
+    const shellStyles = useMemo(() => {
+        const maps = {
+            wood: { bg: 'bg-retro-wood', border: 'border-[#54250b]', accent: 'bg-[#54250b]' },
+            purple: { bg: 'bg-shell-purple', border: 'border-indigo-900', accent: 'bg-indigo-900' },
+            pink: { bg: 'bg-shell-pink', border: 'border-rose-900', accent: 'bg-rose-900' },
+            teal: { bg: 'bg-shell-teal', border: 'border-teal-900', accent: 'bg-teal-900' },
+        };
+        return maps[theme] || maps.wood;
+    }, [theme]);
+
 
     // Default Config for Fallback (Local Dev / API Failure)
     const DEFAULT_CONFIG = {
@@ -59,13 +111,13 @@ export default function App() {
 
     // 2. Handle Input Changes
     const handleInputChange = (e) => {
+        // playBeep(200, 'sine', 0.05); // Typematic sound (optional, might be annoying if too loud)
         const { name, value } = e.target;
-        // Parse numbers safely, defaulting to 0 if empty/invalid
-        const numValue = value === '' ? '' : parseFloat(value);
+        const newValue = value === '' ? '' : value;
 
         setInputs(prev => ({
             ...prev,
-            [name]: numValue
+            [name]: newValue
         }));
     };
 
@@ -73,121 +125,159 @@ export default function App() {
     useEffect(() => {
         if (!config || loading) return;
 
-        // Use 0 for calculation if input is empty string or NaN
-        const safePrice = isNaN(inputs.price) || inputs.price === '' ? 0 : inputs.price;
-        const safeOngkir = isNaN(inputs.ongkir) || inputs.ongkir === '' ? 0 : inputs.ongkir;
-        const safePeople = isNaN(inputs.people) || inputs.people === '' || inputs.people < 1 ? 1 : inputs.people;
+        const val = (v) => (v === '' || isNaN(parseFloat(v)) ? 0 : parseFloat(v));
+
+        const safePrice = val(inputs.price);
+        const safeOngkir = val(inputs.ongkir);
+        const safePeople = val(inputs.people);
+
+        const calcPeople = safePeople < 1 ? 1 : safePeople;
 
         let calculated;
         if (mode === 'KR') {
-            calculated = calculateKorea(safePrice, safeOngkir, safePeople, config);
+            calculated = calculateKorea(safePrice, safeOngkir, calcPeople, config);
         } else {
-            calculated = calculateChina(safePrice, safeOngkir, safePeople, config);
+            calculated = calculateChina(safePrice, safeOngkir, calcPeople, config);
         }
 
         setResult(calculated);
 
+        // Mascot Logic
+        if (calculated.total > 10000000) { // Big money
+            setMascotMood('shocked');
+        } else if (safePrice > 0) {
+            setMascotMood('happy');
+            if (safePrice > 0 && safePrice !== result.itemPrice) playBeep(880, 'square', 0.2); // Success sound on change
+        } else {
+            setMascotMood('idle');
+        }
+
     }, [inputs, mode, config, loading]);
 
     // Render Loading/Error States
-    if (loading) return <div className="p-8">Loading configuration...</div>;
-    if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center text-white font-retro animate-pulse bg-pixel-bg">
+            LOADING WORLD...
+        </div>
+    );
+
+    if (error) return <div className="p-8 text-red-600 bg-white font-bold">Error: {error}</div>;
 
     return (
-        <div className="min-h-screen bg-white text-black p-4 font-sans max-w-md mx-auto">
-            <h1 className="text-2xl font-bold mb-6 border-b pb-2">PICHU GO Calculator</h1>
+        <div className="min-h-screen relative flex flex-col items-center justify-center py-10 px-4 overflow-hidden">
+            <BackgroundScene />
 
-            {/* Mode Switcher */}
-            <div className="flex gap-4 mb-6">
-                <button
-                    onClick={() => setMode('KR')}
-                    className={`px-4 py-2 rounded border ${mode === 'KR' ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                >
-                    Korea (KRW)
-                </button>
-                <button
-                    onClick={() => setMode('CH')}
-                    className={`px-4 py-2 rounded border ${mode === 'CH' ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                >
-                    China (CNY)
-                </button>
-            </div>
-
-            {/* Inputs */}
-            <div className="space-y-4 mb-8">
-                <div>
-                    <label className="block text-sm font-medium mb-1">
-                        Item Price {mode === 'KR' ? '(1 = 1,000 KRW)' : '(CNY)'}
-                    </label>
-                    <input
-                        type="number"
-                        name="price"
-                        value={inputs.price}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-black"
-                        step="0.1"
-                        min="0"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium mb-1">
-                        Domestic Shipping (Ongkir)
-                    </label>
-                    <input
-                        type="number"
-                        name="ongkir"
-                        value={inputs.ongkir}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-black"
-                        step="0.1"
-                        min="0"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium mb-1">
-                        People (Split)
-                    </label>
-                    <input
-                        type="number"
-                        name="people"
-                        value={inputs.people}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-black"
-                        step="1"
-                        min="1"
-                    />
+            {/* PICHU Title Floating */}
+            <div className="absolute top-10 animate-float z-20">
+                <h1 className="font-retro text-4xl md:text-6xl text-[#fca048] drop-shadow-[4px_4px_0_#000] leading-tight text-center">
+                    GO<br />PICHU
+                </h1>
+                <div className="mt-2 text-white font-pixel text-xl bg-black/50 px-3 py-1 rounded mx-auto w-fit">
+                    Level 2.0
                 </div>
             </div>
 
-            {/* Results */}
-            <div className="bg-gray-50 p-4 rounded border">
-                <h2 className="text-lg font-bold mb-4">Calculation Result</h2>
+            {/* DEVICE FRAME */}
+            <div className={`relative z-10 ${shellStyles.bg} p-3 md:p-5 rounded-3xl shadow-[0_20px_0_rgb(0,0,0,0.3),_inset_0_-8px_0_rgba(0,0,0,0.2)] border-b-8 border-r-8 ${shellStyles.border} max-w-md w-full mt-36 transition-colors duration-500`}>
 
-                <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">Item Price (IDR):</span>
-                    <span className="font-mono">{result.itemPrice.toLocaleString('id-ID')}</span>
+                {/* MASCOT (Perched on device) */}
+                <div className="absolute -top-12 -right-4 z-20 pointer-events-none">
+                    <PixelMascot mood={mascotMood} />
                 </div>
 
-                <div className="flex justify-between items-center mb-4">
-                    <span className="text-gray-600">Fees & Admin (IDR):</span>
-                    <span className="font-mono">{result.fees.toLocaleString('id-ID')}</span>
+                {/* Device Bevel Highlights */}
+                <div className="absolute top-4 left-4 w-full h-[2px] bg-white/20 rounded-full"></div>
+
+                {/* SCREEN CONTAINER */}
+                <div className={`bg-[#b8c2b9] p-4 rounded-xl border-4 ${shellStyles.border} shadow-[inset_0_4px_10px_rgba(0,0,0,0.3)] transition-colors duration-500`}>
+
+                    {/* Inner Screen Area */}
+                    <div className="bg-retro-white rounded-lg p-4 shadow-md border-2 border-dashed border-gray-300">
+
+                        {/* Mode Switcher */}
+                        <div className="flex gap-4 mb-6 justify-center">
+                            <PixelButton
+                                onClick={() => { playBeep(); setMode('KR'); }}
+                                active={mode === 'KR'}
+                                variant={mode === 'KR' ? 'primary' : 'secondary'}
+                            >
+                                KRW
+                            </PixelButton>
+                            <PixelButton
+                                onClick={() => { playBeep(); setMode('CH'); }}
+                                active={mode === 'CH'}
+                                variant={mode === 'CH' ? 'primary' : 'secondary'}
+                            >
+                                CNY
+                            </PixelButton>
+                        </div>
+
+                        {/* Inputs */}
+                        <div className="space-y-4">
+                            <PixelInput
+                                label={`Item Price ${mode === 'KR' ? '(x1000)' : '(¥)'}`}
+                                name="price"
+                                value={inputs.price}
+                                onChange={handleInputChange}
+                                placeholder="0"
+                                type="number"
+                                suffix={mode === 'KR' ? '₩' : '¥'}
+                            />
+
+                            <PixelInput
+                                label="Domestic Shipping"
+                                name="ongkir"
+                                value={inputs.ongkir}
+                                onChange={handleInputChange}
+                                placeholder="0"
+                                type="number"
+                            />
+
+                            <PixelInput
+                                label="Split People"
+                                name="people"
+                                value={inputs.people}
+                                onChange={handleInputChange}
+                                placeholder="1"
+                                type="number"
+                            />
+                        </div>
+
+                        {/* RESULT CARD (Solar Screen) */}
+                        <ResultCard result={result} />
+
+                    </div>
                 </div>
 
-                <div className="border-t pt-4 flex justify-between items-center text-xl font-bold">
-                    <span>Total (IDR):</span>
-                    <span>{result.total.toLocaleString('id-ID')}</span>
+                {/* Device Controls (Theme Switcher) */}
+                <div className="mt-4 flex justify-between items-center px-4">
+                    {/* Theme Swatches */}
+                    <div className="flex gap-2 p-1 bg-black/20 rounded-full">
+                        <button onClick={() => handleThemeChange('wood')} className="w-4 h-4 rounded-full bg-[#78350f] border border-white/50 hover:scale-110 transition-transform" />
+                        <button onClick={() => handleThemeChange('purple')} className="w-4 h-4 rounded-full bg-[#8b5cf6] border border-white/50 hover:scale-110 transition-transform" />
+                        <button onClick={() => handleThemeChange('pink')} className="w-4 h-4 rounded-full bg-[#ec4899] border border-white/50 hover:scale-110 transition-transform" />
+                        <button onClick={() => handleThemeChange('teal')} className="w-4 h-4 rounded-full bg-[#14b8a6] border border-white/50 hover:scale-110 transition-transform" />
+                    </div>
+
+                    <button
+                        onClick={() => { playBeep(300, 'sawtooth'); setInputs({ price: '', ongkir: '', people: '' }); }}
+                        className={`text-xs font-retro text-black/50 hover:text-black transition-colors uppercase`}
+                    >
+                        RESET
+                    </button>
                 </div>
             </div>
 
-            {/* Debug/Config Info (Optional, helpful for dev) */}
-            <details className="mt-8 text-xs text-gray-500">
-                <summary>Debug Configuration</summary>
-                <pre className="mt-2 bg-gray-100 p-2 rounded">
-                    {JSON.stringify(config, null, 2)}
-                </pre>
-            </details>
+            {/* Footer / Signpost */}
+            <div className="mt-12 relative z-0 group cursor-default">
+                {/* Signpost Pole */}
+                <div className="w-4 h-16 bg-[#54250b] mx-auto -mb-2 border-x-2 border-black/30"></div>
+                {/* Signpost Board */}
+                <div className="bg-retro-wood px-6 py-3 rounded border-4 border-[#54250b] shadow-[4px_4px_0_rgba(0,0,0,0.3)] transform -rotate-2 group-hover:rotate-0 transition-transform">
+                    <p className="text-white font-pixel text-lg">HANDLED BY PICHU</p>
+                    <p className="text-[#fca048] text-xs font-retro text-center mt-1">© 2026</p>
+                </div>
+            </div>
         </div>
     );
 }
