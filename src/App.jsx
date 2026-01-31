@@ -215,7 +215,7 @@ export default function App() {
                         {/* Inputs */}
                         <div className="space-y-4">
                             <PixelInput
-                                label={`Item Price ${mode === 'KR' ? '(x1000)' : '(¥)'}`}
+                                label={`Item Price ${mode === 'KR' ? '(0.1 = 1000 ₩)' : '(¥)'}`}
                                 name="price"
                                 value={inputs.price}
                                 onChange={handleInputChange}
